@@ -1,7 +1,9 @@
 package main
 
 import (
-  "io"
+	"bufio"
+	"fmt"
+	"io"
 	"fmt"
 	"net"
 	"os"
@@ -35,23 +37,16 @@ func main() {
 func handleRequest(conn net.Conn) {
 	defer conn.Close()
 
+	const buffSize = 1024*50
 	// Create a buffer to hold the received data.
-	buffer := make([]byte, 1024 * 50)
+	r := bufio.NewReaderSize(conn, buffSize)
 
 	for {
-		// Read the incoming data into the buffer.
-		length, err := conn.Read(buffer)
+		_, err := io.Copy(conn, r)
 		if err != nil {
 			if err != io.EOF {
 				fmt.Println("Error reading:", err.Error())
 			}
-			break
-		}
-
-		// Send the received data back to the client.
-		_, err = conn.Write(buffer[:length])
-		if err != nil {
-			fmt.Println("Error writing:", err.Error())
 			break
 		}
 	}
